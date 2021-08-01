@@ -12,9 +12,9 @@
 
 采用Docker，开启多个Ubuntu 20.04系统的容器进行攻击样本采集，容器之间采用Docker内置的网桥进行连接  
 
-###1.1 ARP-Attack
+### 1.1 ARP-Attack
 
-###相关容器
+### 相关容器
 
 * 攻击容器A
 	* IP：`10.9.0.105`
@@ -25,7 +25,7 @@
 * 目的容器C
 	* IP：`10.9.0.6`
 
-###攻击步骤
+### 攻击步骤
 
 分别构造`ARP request`，`ARP reply`，`ARP gratuitous message` 报文对受害者主机的 arp cache 进行污染
 
@@ -75,7 +75,7 @@ pkt3 = E/B
 	sendp(pkt3, iface='eth0')
 ```
 
-###1.2 DNS Poisoning  
+### 1.2 DNS Poisoning  
 
 #### 相关容器：
 
@@ -85,7 +85,7 @@ pkt3 = E/B
     * IP：`10.9.0.5`
 * 本地DNS
     * IP：`10.9.0.11`
-####攻击步骤：
+#### 攻击步骤：
 在容器A运行DNS Poisoning攻击程序，代码如下：
 
 ```python
@@ -113,7 +113,7 @@ dig www.example.com
 
 向DNS服务器申请www.example.com的IP时会被容器A监听并将错误IP返回给容器B污染容器B的DNS缓存，从而当容器B访问www.example.com时会直接跳转到错误的IP 10.0.2.5。
 
-###1.3 ICMP Redirect  
+### 1.3 ICMP Redirect  
 
 #### 相关容器
 * 攻击者容器
@@ -129,7 +129,7 @@ dig www.example.com
 #### 攻击步骤
 攻击者构造一个恶意的ICMP Redirect包。源地址为路由地址`10.9.0.11`，目的地址为受害者`10.9.0.5`，内容为将`192.168.60.5`为目标的包重定向至恶意路由`10.9.0.111`。当受害者和`192.168.60.5`发生了ICMP交互后，发送这个恶意的ICMP Redirect包，即可将受害者的路由cache污染，一段时间内会将目标为`192.168.60.5`的包交付给恶意路由转发。
 
-###1.4 nmap  
+### 1.4 nmap  
 
 #### 相关容器：
 
@@ -149,20 +149,20 @@ nmap 10.9.0.1 -p1-200
 
 实现从容器A扫描容器B的1到200端口。
 
-###1.5 SYN-Flood
+### 1.5 SYN-Flood
 
-###相关容器
+### 相关容器
 
 * 攻击容器A
-	*IP：`10.9.0.1`
+	* IP：`10.9.0.1`
 * 受害者容器B
-	*IP：`10.9.0.5`
+	* IP：`10.9.0.5`
 
-###攻击步骤
+### 攻击步骤
 
 关闭`SYN cookies`功能，构造大量不同的`TCP SYN`报文并在短时间内大量发送至受害者B，造成`SYN-Flood`
 
-###1.6 TCP-Reset 
+### 1.6 TCP-Reset 
  
 #### 相关容器
 * 攻击者容器
@@ -176,7 +176,7 @@ nmap 10.9.0.1 -p1-200
 
 ## 2. IDS的设计  
 
-###2.1 使用方法
+### 2.1 使用方法
 
 引入optparse模块，实现命令行参数的功能
 ```
@@ -199,11 +199,9 @@ Usage program --ip <local ip\> --m <online/offline mode> --interface<interface(o
 Python cmd.py --ip 10.9.0.5 --m off
 ```
 
-###2.2 IDS框架  
+### 2.2 IDS框架  
 
 ![Image text](/struct.png)
-
-###2.3 ICMP重定向 防御  
 
 ### 2.3 ICMP重定向攻击防御
 代码如下。由于ICMP协议本身在设计时就没有考虑过多的安全性，因此在ICMP Redirect包中提供的信息很难进行检测，即正常的包和非正常的包没有很大的区别。考虑到一般的网络拓扑中只有唯一的网关，因此不会发送Redirect包，因此针对ICMP重定向攻击，我们选择在在线IDS运行的开始就开启Linux自带的防御选项，即不接受Redirect包，从而避免了被攻击成功。
@@ -261,11 +259,11 @@ iptables -A INPUT -s src_IP -j DROP
 
 ### 2.7 基于统计的SYN-Flood 检测与防御
 
-###检测部分：
+### 检测部分：
 
 统计出现的目的ip为ids检测主机的所有`TCP SYN` 报文数量，统计在0.1s内若数量超过2000以上即会发出警报，并记录相应的攻击流量起止时间
 
-###具体步骤：
+### 具体步骤：
 
 * 首先目前检测报文是否为TCP SYN报文并判断该报文目的地址是否为检测主机
 ```
@@ -288,7 +286,7 @@ if 'TCP' in data:
 		
 		* 当数量大于2000时发出警报信息，并生成警报记录
 
-###防御：
+### 防御：
 
 开启SYN-cookies服务（ids在root权限下运行）
 ```
