@@ -18,7 +18,7 @@ nmap 10.9.0.1 -p1-200
 
 ### 1.2 DNS Poisoning
 
-####相关容器：
+#### 相关容器：
 
 * 攻击者容器A
     * IP：`10.9.0.1`
@@ -56,7 +56,7 @@ dig www.example.com
 
 ### 2.2 IDS框架
 
-![Image text](../struct.png)
+![Image text](/struct.png)
 
 ### 2.6 基于统计的扫描检测与防御
 
